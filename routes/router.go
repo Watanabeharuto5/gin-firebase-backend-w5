@@ -27,6 +27,7 @@ func SetupRouter() *gin.Engine {
 	// ─── Init handlers ─────────────────────────────────────
 	authHandler := handlers.NewAuthHandler()
 	productHandler := handlers.NewProductHandler()
+	cartHandler := handlers.NewCartHandler()
 
 	// ─── API v1 group ──────────────────────────────────────
 	v1 := r.Group("/v1")
@@ -71,6 +72,15 @@ func SetupRouter() *gin.Engine {
 					// DELETE /v1/products/:id
 					adminProducts.DELETE("/:id", productHandler.Delete)
 				}
+			}
+
+			// Cart
+			cart := protected.Group("/cart")
+			{
+				cart.GET("", cartHandler.GetCart)
+				cart.POST("", cartHandler.AddToCart)
+				cart.PUT("/:id", cartHandler.UpdateCartItem)
+				cart.DELETE("/:id", cartHandler.RemoveFromCart)
 			}
 		}
 	}
