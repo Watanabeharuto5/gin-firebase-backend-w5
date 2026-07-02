@@ -135,3 +135,8 @@ func (s *CartService) RemoveFromCart(userID, itemID uint) error {
 	// 2. Hapus
 	return s.cartRepo.Delete(itemID, userID)
 }
+
+// ClearCart menghapus seluruh item keranjang milik user
+func (s *CartService) ClearCart(userID uint) error {
+	return s.cartRepo.Clear(userID)
+}

@@ -10,12 +10,14 @@ import (
 )
 
 type CartHandler struct {
-	cartService *services.CartService
+	cartService        *services.CartService
+	transactionService *services.TransactionService
 }
 
 func NewCartHandler() *CartHandler {
 	return &CartHandler{
-		cartService: services.NewCartService(),
+		cartService:        services.NewCartService(),
+		transactionService: services.NewTransactionService(),
 	}
 }
 
@@ -188,5 +190,73 @@ func (h *CartHandler) RemoveFromCart(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Produk berhasil dihapus dari keranjang",
+	})
+}
+
+// Checkout godoc
+// POST /cart/checkout
+func (h *CartHandler) Checkout(c *gin.Context) {
+	userID, ok := getContextUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Autentikasi gagal: user_id tidak ditemukan",
+		})
+		return
+	}
+
+	// Parse request body
+	var req models.CheckoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "payment_method wajib diisi",
+		})
+		return
+	}
+
+	// Proses checkout (ACID compliant database transaction)
+	transaction, err := h.transactionService.CheckoutCart(userID, req.PaymentMethod)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Checkout berhasil diproses",
+		"data":    transaction,
+	})
+}
+
+// GetHistory godoc
+// GET /transactions
+func (h *CartHandler) GetHistory(c *gin.Context) {
+	userID, ok := getContextUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Autentikasi gagal: user_id tidak ditemukan",
+		})
+		return
+	}
+
+	txs, err := h.transactionService.GetTransactionHistory(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Gagal mengambil riwayat transaksi",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Riwayat transaksi berhasil diambil",
+		"data":    txs,
 	})
 }

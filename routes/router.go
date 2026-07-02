@@ -79,9 +79,13 @@ func SetupRouter() *gin.Engine {
 			{
 				cart.GET("", cartHandler.GetCart)
 				cart.POST("", cartHandler.AddToCart)
+				cart.POST("/checkout", cartHandler.Checkout)
 				cart.PUT("/:id", cartHandler.UpdateCartItem)
 				cart.DELETE("/:id", cartHandler.RemoveFromCart)
 			}
+
+			// Transactions
+			protected.GET("/transactions", cartHandler.GetHistory)
 		}
 	}
 
