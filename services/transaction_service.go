@@ -82,7 +82,7 @@ func (s *TransactionService) CheckoutCart(userID uint, paymentMethod string) (*m
 			UserID:        userID,
 			InvoiceNumber: invoiceNumber,
 			TotalPrice:    totalPrice,
-			Status:        "Selesai",
+			Status:        "Pending",
 			PaymentMethod: paymentMethod,
 			Items:         txItems,
 		}
@@ -109,4 +109,11 @@ func (s *TransactionService) CheckoutCart(userID uint, paymentMethod string) (*m
 // GetTransactionHistory mengambil seluruh riwayat transaksi belanja user
 func (s *TransactionService) GetTransactionHistory(userID uint) ([]models.Transaction, error) {
 	return s.transactionRepo.FindAllByUserID(userID)
+}
+
+// ConfirmPayment mengubah status transaksi menjadi Selesai setelah pembayaran berhasil diverifikasi
+func (s *TransactionService) ConfirmPayment(invoiceNumber string) error {
+	return config.DB.Model(&models.Transaction{}).
+		Where("invoice_number = ?", invoiceNumber).
+		Update("status", "Selesai").Error
 }

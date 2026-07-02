@@ -86,6 +86,7 @@ func SetupRouter() *gin.Engine {
 
 			// Transactions
 			protected.GET("/transactions", cartHandler.GetHistory)
+			protected.POST("/transactions/confirm", cartHandler.ConfirmPayment)
 		}
 	}
 
