@@ -117,3 +117,10 @@ func (s *TransactionService) ConfirmPayment(invoiceNumber string) error {
 		Where("invoice_number = ?", invoiceNumber).
 		Update("status", "Selesai").Error
 }
+
+// CancelPayment mengubah status transaksi menjadi Batal jika pembayaran dibatalkan
+func (s *TransactionService) CancelPayment(invoiceNumber string) error {
+	return config.DB.Model(&models.Transaction{}).
+		Where("invoice_number = ?", invoiceNumber).
+		Update("status", "Batal").Error
+}

@@ -290,3 +290,33 @@ func (h *CartHandler) ConfirmPayment(c *gin.Context) {
 		"message": "Pembayaran berhasil dikonfirmasi",
 	})
 }
+
+// CancelPayment godoc
+// POST /transactions/cancel
+func (h *CartHandler) CancelPayment(c *gin.Context) {
+	var req struct {
+		InvoiceNumber string `json:"invoice_number" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "invoice_number wajib diisi",
+		})
+		return
+	}
+
+	err := h.transactionService.CancelPayment(req.InvoiceNumber)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Gagal membatalkan transaksi",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Transaksi berhasil dibatalkan",
+	})
+}
